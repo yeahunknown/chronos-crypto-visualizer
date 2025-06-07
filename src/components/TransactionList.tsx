@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ExternalLink } from 'lucide-react';
 import { Transaction } from '../types/wallet';
 
 interface TransactionListProps {
@@ -17,6 +17,20 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
     }).format(date);
   };
 
+  const generateRandomTxHash = () => {
+    const chars = '0123456789abcdef';
+    let result = '';
+    for (let i = 0; i < 64; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  const openSolscan = (tx: Transaction) => {
+    const txHash = generateRandomTxHash();
+    window.open(`https://solscan.io/tx/${txHash}`, '_blank');
+  };
+
   return (
     <div className="space-y-3">
       {transactions.length === 0 ? (
@@ -25,7 +39,11 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
         </div>
       ) : (
         transactions.map((tx) => (
-          <div key={tx.id} className="bg-card border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+          <div 
+            key={tx.id} 
+            className="wallet-card rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
+            onClick={() => openSolscan(tx)}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -34,8 +52,21 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
                   {tx.type === 'send' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
                 </div>
                 <div>
-                  <div className="font-medium capitalize">{tx.type} {tx.token}</div>
+                  <div className="font-medium capitalize flex items-center space-x-1">
+                    <span>{tx.type} {tx.token}</span>
+                    <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                   <div className="text-sm text-muted-foreground">{formatDate(tx.timestamp)}</div>
+                  {tx.type === 'send' && tx.to && (
+                    <div className="text-xs text-muted-foreground">
+                      To: {tx.to.slice(0, 6)}...{tx.to.slice(-4)}
+                    </div>
+                  )}
+                  {tx.type === 'receive' && tx.from && (
+                    <div className="text-xs text-muted-foreground">
+                      From: {tx.from}
+                    </div>
+                  )}
                 </div>
               </div>
               

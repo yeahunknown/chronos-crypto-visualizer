@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { ArrowUp } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { ArrowLeft } from 'lucide-react';
 
 interface TokenChartProps {
   token: { symbol: string; name: string; price: number; priceChange24h: number };
@@ -9,40 +9,75 @@ interface TokenChartProps {
 }
 
 const TokenChart = ({ token, onBack }: TokenChartProps) => {
-  const [chartData, setChartData] = useState<Array<{ time: string; price: number }>>([]);
+  const [chartData, setChartData] = useState<Array<{ time: string; price: number; timestamp: number }>>([]);
+  const [timeframe, setTimeframe] = useState('24H');
 
   useEffect(() => {
-    // Generate mock chart data
-    const generateChartData = () => {
+    const generateRealisticChartData = () => {
       const data = [];
       const basePrice = token.price;
       const now = new Date();
+      const points = timeframe === '24H' ? 24 : timeframe === '7D' ? 168 : 720; // 24h, 7d, 30d
+      const interval = timeframe === '24H' ? 60 * 60 * 1000 : timeframe === '7D' ? 60 * 60 * 1000 : 60 * 60 * 1000;
       
-      for (let i = 23; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-        const randomChange = (Math.random() - 0.5) * 0.1;
-        const price = basePrice * (1 + randomChange);
+      let currentPrice = basePrice;
+      
+      for (let i = points; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * interval);
+        
+        // More realistic price movement with trend and volatility
+        const volatility = token.symbol === 'USDC' ? 0.001 : 0.02;
+        const trend = (token.priceChange24h / 100) / points;
+        const randomWalk = (Math.random() - 0.5) * volatility;
+        
+        currentPrice = currentPrice * (1 + trend + randomWalk);
+        
+        // Ensure price doesn't go negative
+        currentPrice = Math.max(0.01, currentPrice);
         
         data.push({
-          time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          price: price
+          time: timeframe === '24H' 
+            ? time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            : time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          price: currentPrice,
+          timestamp: time.getTime()
         });
       }
       
       return data;
     };
 
-    setChartData(generateChartData());
-  }, [token.price]);
+    setChartData(generateRealisticChartData());
+  }, [token.price, token.priceChange24h, timeframe]);
+
+  const formatPrice = (value: number) => {
+    if (value < 1) return `$${value.toFixed(4)}`;
+    if (value < 100) return `$${value.toFixed(2)}`;
+    return `$${value.toLocaleString()}`;
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-lg font-semibold">
+            {formatPrice(payload[0].value)}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mobile-padding">
       <div className="flex items-center space-x-3">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-muted rounded-lg transition-colors"
+          className="p-2 hover:bg-muted rounded-lg transition-colors wallet-button"
         >
-          <ArrowUp size={20} className="rotate-[-90deg]" />
+          <ArrowLeft size={20} />
         </button>
         <div>
           <h2 className="text-2xl font-bold">{token.symbol}</h2>
@@ -50,15 +85,32 @@ const TokenChart = ({ token, onBack }: TokenChartProps) => {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="wallet-card rounded-xl p-6">
         <div className="mb-6">
-          <div className="text-3xl font-bold">${token.price.toFixed(2)}</div>
+          <div className="text-3xl font-bold">{formatPrice(token.price)}</div>
           <div className={`text-sm flex items-center space-x-1 ${
-            token.priceChange24h >= 0 ? 'text-green-500' : 'text-red-500'
+            token.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'
           }`}>
             <span>{token.priceChange24h >= 0 ? '+' : ''}{token.priceChange24h.toFixed(2)}%</span>
             <span className="text-muted-foreground">24h</span>
           </div>
+        </div>
+
+        {/* Timeframe buttons */}
+        <div className="flex space-x-2 mb-4">
+          {['24H', '7D', '30D'].map((tf) => (
+            <button
+              key={tf}
+              onClick={() => setTimeframe(tf)}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors wallet-button ${
+                timeframe === tf 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              {tf}
+            </button>
+          ))}
         </div>
 
         <div className="h-64">
@@ -75,13 +127,16 @@ const TokenChart = ({ token, onBack }: TokenChartProps) => {
                 axisLine={false} 
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#888' }}
+                tickFormatter={formatPrice}
               />
+              <Tooltip content={<CustomTooltip />} />
               <Line 
                 type="monotone" 
                 dataKey="price" 
                 stroke={token.priceChange24h >= 0 ? '#10b981' : '#ef4444'}
                 strokeWidth={2}
                 dot={false}
+                activeDot={{ r: 4, fill: token.priceChange24h >= 0 ? '#10b981' : '#ef4444' }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -89,13 +144,25 @@ const TokenChart = ({ token, onBack }: TokenChartProps) => {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="wallet-card rounded-xl p-4">
           <div className="text-sm text-muted-foreground">24h High</div>
-          <div className="text-lg font-semibold">${(token.price * 1.05).toFixed(2)}</div>
+          <div className="text-lg font-semibold">{formatPrice(token.price * 1.05)}</div>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="wallet-card rounded-xl p-4">
           <div className="text-sm text-muted-foreground">24h Low</div>
-          <div className="text-lg font-semibold">${(token.price * 0.95).toFixed(2)}</div>
+          <div className="text-lg font-semibold">{formatPrice(token.price * 0.95)}</div>
+        </div>
+        <div className="wallet-card rounded-xl p-4">
+          <div className="text-sm text-muted-foreground">Market Cap</div>
+          <div className="text-lg font-semibold">
+            ${(token.price * (Math.random() * 1000000000 + 1000000000)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </div>
+        </div>
+        <div className="wallet-card rounded-xl p-4">
+          <div className="text-sm text-muted-foreground">Volume (24h)</div>
+          <div className="text-lg font-semibold">
+            ${(token.price * (Math.random() * 100000000 + 10000000)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </div>
         </div>
       </div>
     </div>

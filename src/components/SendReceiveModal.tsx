@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, ArrowUp, ArrowDown } from 'lucide-react';
+import { X, ArrowUp, ArrowDown, Copy, Check } from 'lucide-react';
 
 interface SendReceiveModalProps {
   isOpen: boolean;
@@ -15,6 +15,10 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
   const [selectedToken, setSelectedToken] = useState('SOL');
   const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Realistic wallet address
+  const myWalletAddress = '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM';
 
   if (!isOpen) return null;
 
@@ -24,8 +28,8 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
 
     setIsLoading(true);
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Realistic loading time
+    await new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));
     
     onSubmit(parseFloat(amount), selectedToken, address);
     setIsLoading(false);
@@ -34,11 +38,17 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
     onClose();
   };
 
+  const copyAddress = async () => {
+    await navigator.clipboard.writeText(myWalletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const selectedTokenData = tokens.find(t => t.symbol === selectedToken);
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md slide-up">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="wallet-card rounded-2xl p-6 w-full max-w-md slide-up">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -46,7 +56,7 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
             }`}>
               {type === 'send' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
             </div>
-            <h2 className="text-xl font-bold capitalize">{type}</h2>
+            <h2 className="text-xl font-bold capitalize">{type} {selectedToken}</h2>
           </div>
           <button
             onClick={onClose}
@@ -55,6 +65,24 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
             <X size={20} />
           </button>
         </div>
+
+        {type === 'receive' && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Your {selectedToken} Address</label>
+            <div className="bg-muted border border-border rounded-lg p-3 flex items-center justify-between">
+              <span className="text-sm font-mono break-all mr-2">{myWalletAddress}</span>
+              <button
+                onClick={copyAddress}
+                className="p-1 hover:bg-background rounded transition-colors"
+              >
+                {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Send {selectedToken} to this address
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -66,7 +94,7 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
             >
               {tokens.map(token => (
                 <option key={token.symbol} value={token.symbol}>
-                  {token.symbol} ({token.balance.toFixed(4)})
+                  {token.symbol} ({token.balance.toFixed(4)} available)
                 </option>
               ))}
             </select>
@@ -108,7 +136,7 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
           <button
             type="submit"
             disabled={isLoading || !amount || (type === 'send' && !address)}
-            className={`w-full py-3 rounded-lg font-medium transition-all ${
+            className={`w-full py-3 rounded-lg font-medium transition-all wallet-button ${
               type === 'send' 
                 ? 'bg-red-500 hover:bg-red-600 text-white' 
                 : 'bg-green-500 hover:bg-green-600 text-white'

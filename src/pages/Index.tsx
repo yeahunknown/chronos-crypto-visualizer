@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { ArrowUp, ArrowDown, Clock, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+import { ArrowUp, ArrowDown, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import ChronosLogo from '../components/ChronosLogo';
 import WalletHeader from '../components/WalletHeader';
 import TokenCard from '../components/TokenCard';
@@ -43,7 +42,7 @@ const Index = () => {
       setWalletState(prev => ({
         ...prev,
         tokens: prev.tokens.map(token => {
-          if (token.symbol === 'USDC') return token; // USDC is stable
+          if (token.symbol === 'USDC') return token;
           
           const randomChange = (Math.random() - 0.5) * 0.02; // ±1% random change
           const newPriceChange = token.priceChange24h + randomChange;
@@ -121,9 +120,9 @@ const Index = () => {
   if (walletState.isLocked) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="bg-card border border-border rounded-2xl p-8 w-full max-w-md text-center">
+        <div className="wallet-card rounded-2xl p-8 w-full max-w-md text-center">
           <ChronosLogo size={80} className="mx-auto mb-6" />
-          <h1 className="text-2xl font-bold mb-2">Chronos</h1>
+          <h1 className="text-2xl font-bold mb-2 text-white">Chronos</h1>
           <p className="text-muted-foreground mb-6">Enter your password to unlock</p>
           
           <input
@@ -137,7 +136,7 @@ const Index = () => {
           
           <button
             onClick={handleLockWallet}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 wallet-button"
           >
             <Unlock size={20} />
             <span>Unlock Wallet</span>
@@ -175,11 +174,11 @@ const Index = () => {
         username={walletState.username}
       />
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 mobile-padding">
         {currentView === 'home' && (
           <>
             {/* Balance Card */}
-            <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-border rounded-2xl p-6">
+            <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-border rounded-2xl p-6 wallet-card">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-muted-foreground">Total Balance</span>
                 <button
@@ -192,10 +191,10 @@ const Index = () => {
               
               <div className="space-y-2">
                 <div className="text-3xl font-bold">
-                  {balanceVisible ? `$${walletState.totalNetWorth.toFixed(2)}` : '••••••'}
+                  {balanceVisible ? `$${walletState.totalNetWorth.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : '••••••'}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Press ↑ to add $3847
+                  Press ↑ to add $3,847
                 </div>
               </div>
 
@@ -203,14 +202,14 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button
                   onClick={() => setShowModal('send')}
-                  className="bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 hover:shadow-lg"
+                  className="bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button"
                 >
                   <ArrowUp size={20} />
                   <span>Send</span>
                 </button>
                 <button
                   onClick={() => setShowModal('receive')}
-                  className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 hover:shadow-lg"
+                  className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button"
                 >
                   <ArrowDown size={20} />
                   <span>Receive</span>
@@ -242,7 +241,7 @@ const Index = () => {
 
         {currentView === 'profile' && (
           <div className="space-y-6">
-            <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="wallet-card rounded-2xl p-6">
               <div className="flex items-center space-x-4 mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
                   {walletState.username.charAt(0)}
@@ -256,7 +255,7 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-muted/50 rounded-xl p-4">
                   <div className="text-sm text-muted-foreground">Net Worth</div>
-                  <div className="text-xl font-bold">${walletState.totalNetWorth.toFixed(2)}</div>
+                  <div className="text-xl font-bold">${walletState.totalNetWorth.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
                   <div className="text-sm text-muted-foreground">Tokens</div>
@@ -265,7 +264,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="wallet-card rounded-2xl p-6">
               <h3 className="text-lg font-semibold mb-4">Portfolio Breakdown</h3>
               <div className="space-y-3">
                 {walletState.tokens.map(token => {
@@ -281,7 +280,7 @@ const Index = () => {
                       </div>
                       <div className="text-right">
                         <div className="font-semibold">{percentage.toFixed(1)}%</div>
-                        <div className="text-sm text-muted-foreground">${value.toFixed(2)}</div>
+                        <div className="text-sm text-muted-foreground">${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                       </div>
                     </div>
                   );
@@ -293,12 +292,12 @@ const Index = () => {
 
         {currentView === 'settings' && (
           <div className="space-y-6">
-            <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="wallet-card rounded-2xl p-6">
               <h2 className="text-lg font-semibold mb-4">Security</h2>
               
               <button
                 onClick={handleLockWallet}
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2"
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button"
               >
                 <Lock size={20} />
                 <span>Lock Wallet</span>
@@ -309,7 +308,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="wallet-card rounded-2xl p-6">
               <h3 className="text-lg font-semibold mb-4">Preferences</h3>
               
               <div className="space-y-4">
@@ -318,7 +317,7 @@ const Index = () => {
                   <button
                     onClick={() => setBalanceVisible(!balanceVisible)}
                     className={`w-12 h-6 rounded-full transition-colors ${
-                      balanceVisible ? 'bg-blue-500' : 'bg-gray-300'
+                      balanceVisible ? 'bg-blue-500' : 'bg-gray-600'
                     }`}
                   >
                     <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
@@ -329,8 +328,8 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-2xl p-6">
-              <h3 className="text-lg font-semibold mb-4">Transactions</h3>
+            <div className="wallet-card rounded-2xl p-6">
+              <h3 className="text-lg font-semibold mb-4">All Transactions</h3>
               <div className="max-h-64 overflow-y-auto">
                 <TransactionList transactions={walletState.transactions} />
               </div>
