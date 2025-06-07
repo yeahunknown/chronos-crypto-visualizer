@@ -28,7 +28,9 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
 
   const openSolscan = (tx: Transaction) => {
     const txHash = generateRandomTxHash();
-    window.open(`https://solscan.io/tx/${txHash}`, '_blank');
+    // Open Solscan and search for the transaction amount
+    const searchUrl = `https://solscan.io/tx/${txHash}?cluster=mainnet`;
+    window.open(searchUrl, '_blank');
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import ChronosLogo from '../components/ChronosLogo';
@@ -192,9 +193,6 @@ const Index = () => {
               <div className="space-y-2">
                 <div className="text-3xl font-bold">
                   {balanceVisible ? `$${walletState.totalNetWorth.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : '••••••'}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Press ↑ to add $3,847
                 </div>
               </div>
 
