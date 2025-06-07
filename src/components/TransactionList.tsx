@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ArrowUp, ArrowDown, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowUp, ArrowDown, Copy, Check } from 'lucide-react';
 import { Transaction } from '../types/wallet';
 
 interface TransactionListProps {
@@ -8,6 +8,8 @@ interface TransactionListProps {
 }
 
 const TransactionList = ({ transactions }: TransactionListProps) => {
+  const [copiedTx, setCopiedTx] = useState<string | null>(null);
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -15,6 +17,12 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
       hour: '2-digit',
       minute: '2-digit',
     }).format(date);
+  };
+
+  const handleCopy = (txId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCopiedTx(txId);
+    setTimeout(() => setCopiedTx(null), 2000);
   };
 
   const generateRandomTxHash = () => {
@@ -28,7 +36,6 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
 
   const openSolscan = (tx: Transaction) => {
     const txHash = generateRandomTxHash();
-    // Open Solscan and search for the transaction amount
     const searchUrl = `https://solscan.io/tx/${txHash}?cluster=mainnet`;
     window.open(searchUrl, '_blank');
   };
@@ -56,7 +63,6 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
                 <div>
                   <div className="font-medium capitalize flex items-center space-x-1">
                     <span>{tx.type} {tx.token}</span>
-                    <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="text-sm text-muted-foreground">{formatDate(tx.timestamp)}</div>
                   {tx.type === 'send' && tx.to && (
@@ -72,19 +78,32 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
                 </div>
               </div>
               
-              <div className="text-right">
-                <div className={`font-semibold ${
-                  tx.type === 'send' ? 'text-red-400' : 'text-green-400'
-                }`}>
-                  {tx.type === 'send' ? '-' : '+'}{tx.amount.toFixed(4)} {tx.token}
+              <div className="text-right flex items-center space-x-3">
+                <div>
+                  <div className={`font-semibold ${
+                    tx.type === 'send' ? 'text-red-400' : 'text-green-400'
+                  }`}>
+                    {tx.type === 'send' ? '-' : '+'}{tx.amount.toFixed(4)} {tx.token}
+                  </div>
+                  <div className={`text-xs px-2 py-1 rounded-full ${
+                    tx.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                    tx.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {tx.status}
+                  </div>
                 </div>
-                <div className={`text-xs px-2 py-1 rounded-full ${
-                  tx.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                  tx.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                  'bg-red-500/20 text-red-400'
-                }`}>
-                  {tx.status}
-                </div>
+                
+                <button
+                  onClick={(e) => handleCopy(tx.id, e)}
+                  className="p-2 hover:bg-muted/50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  {copiedTx === tx.id ? (
+                    <Check size={16} className="text-green-400" />
+                  ) : (
+                    <Copy size={16} className="text-muted-foreground" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
