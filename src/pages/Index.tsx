@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import ChronosLogo from '../components/ChronosLogo';
@@ -200,14 +199,14 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button
                   onClick={() => setShowModal('send')}
-                  className="bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button"
+                  className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 hover:from-slate-800 hover:via-slate-600 hover:to-slate-400 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button shadow-lg"
                 >
                   <ArrowUp size={20} />
                   <span>Send</span>
                 </button>
                 <button
                   onClick={() => setShowModal('receive')}
-                  className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button"
+                  className="bg-gradient-to-r from-gray-900 via-gray-600 to-gray-400 hover:from-gray-800 hover:via-gray-500 hover:to-gray-300 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button shadow-lg"
                 >
                   <ArrowDown size={20} />
                   <span>Receive</span>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowUp, ArrowDown, Copy, Check } from 'lucide-react';
 import { Transaction } from '../types/wallet';
@@ -21,8 +20,12 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
 
   const handleCopy = async (txId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const txHash = '5oJQ1mZuBEqzBfVdWJxCWkbo6ScVR5ALrgMDnMfs9KyMXC7Q7E1JWRCvTC6wZ8hHUbL7VfCqa7nWJzN2XNwCemR6';
-    await navigator.clipboard.writeText(txHash);
+    const txHashes = [
+      '5oJQ1mZuBEqzBfVdWJxCWkbo6ScVR5ALrgMDnMfs9KyMXC7Q7E1JWRCvTC6wZ8hHUbL7VfCqa7nWJzN2XNwCemR6',
+      '3VtY2DqNH86xqSHZ3X6vTgNqMfYrpVjRYiFeaJCTH3xrbABxTmg6BrRMCa4rFhwMZfdfZuWdQDEZsszUSo3tM91X'
+    ];
+    const randomTxHash = txHashes[Math.floor(Math.random() * txHashes.length)];
+    await navigator.clipboard.writeText(randomTxHash);
     setCopiedTx(txId);
     setTimeout(() => setCopiedTx(null), 2000);
   };
