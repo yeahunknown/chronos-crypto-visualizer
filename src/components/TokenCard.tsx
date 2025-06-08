@@ -20,13 +20,13 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
 
   const getTokenIcon = (symbol: string) => {
     const icons: { [key: string]: string } = {
-      SOL: '◉',
-      ETH: '♦',
-      BTC: '₿',
-      MATIC: '▲',
-      USDC: '$'
+      SOL: 'https://i.ibb.co/nNdR4cQt/IMG-1357.png',
+      ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+      BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+      MATIC: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+      USDC: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'
     };
-    return icons[symbol] || '●';
+    return icons[symbol];
   };
 
   const getTokenColor = (symbol: string) => {
@@ -40,6 +40,8 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
     return colors[symbol] || 'from-gray-400 to-gray-600';
   };
 
+  const tokenIcon = getTokenIcon(token.symbol);
+
   return (
     <div 
       onClick={onClick}
@@ -47,8 +49,22 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getTokenColor(token.symbol)} flex items-center justify-center text-white font-bold text-sm`}>
-            {getTokenIcon(token.symbol)}
+          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getTokenColor(token.symbol)} flex items-center justify-center text-white font-bold text-sm overflow-hidden`}>
+            {tokenIcon ? (
+              <img 
+                src={tokenIcon} 
+                alt={token.symbol} 
+                className="w-8 h-8 object-contain"
+                onError={(e) => {
+                  // Fallback to text if image fails to load
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling!.style.display = 'block';
+                }}
+              />
+            ) : null}
+            <span style={{ display: tokenIcon ? 'none' : 'block' }}>
+              {token.symbol.charAt(0)}
+            </span>
           </div>
           <div>
             <div className="font-semibold">{token.symbol}</div>

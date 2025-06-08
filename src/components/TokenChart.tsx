@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { ArrowLeft } from 'lucide-react';
+import { fetchTokenChart } from '../services/cryptoService';
 
 interface TokenChartProps {
   token: { symbol: string; name: string; price: number; priceChange24h: number };
@@ -11,44 +11,57 @@ interface TokenChartProps {
 const TokenChart = ({ token, onBack }: TokenChartProps) => {
   const [chartData, setChartData] = useState<Array<{ time: string; price: number; timestamp: number }>>([]);
   const [timeframe, setTimeframe] = useState('24H');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const generateRealisticChartData = () => {
-      const data = [];
-      const basePrice = token.price;
-      const now = new Date();
-      const points = timeframe === '24H' ? 24 : timeframe === '7D' ? 168 : 720; // 24h, 7d, 30d
-      const interval = timeframe === '24H' ? 60 * 60 * 1000 : timeframe === '7D' ? 60 * 60 * 1000 : 60 * 60 * 1000;
+    const loadChartData = async () => {
+      setLoading(true);
+      const days = timeframe === '24H' ? 1 : timeframe === '7D' ? 7 : 30;
+      const data = await fetchTokenChart(token.symbol, days);
       
-      let currentPrice = basePrice;
-      
-      for (let i = points; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * interval);
-        
-        // More realistic price movement with trend and volatility
-        const volatility = token.symbol === 'USDC' ? 0.001 : 0.02;
-        const trend = (token.priceChange24h / 100) / points;
-        const randomWalk = (Math.random() - 0.5) * volatility;
-        
-        currentPrice = currentPrice * (1 + trend + randomWalk);
-        
-        // Ensure price doesn't go negative
-        currentPrice = Math.max(0.01, currentPrice);
-        
-        data.push({
-          time: timeframe === '24H' 
-            ? time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-            : time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          price: currentPrice,
-          timestamp: time.getTime()
-        });
+      if (data) {
+        setChartData(data);
+      } else {
+        // Fallback to generated data if API fails
+        const fallbackData = generateFallbackData();
+        setChartData(fallbackData);
       }
-      
-      return data;
+      setLoading(false);
     };
 
-    setChartData(generateRealisticChartData());
-  }, [token.price, token.priceChange24h, timeframe]);
+    loadChartData();
+  }, [token.symbol, timeframe]);
+
+  const generateFallbackData = () => {
+    const data = [];
+    const basePrice = token.price;
+    const now = new Date();
+    const points = timeframe === '24H' ? 24 : timeframe === '7D' ? 168 : 720;
+    const interval = timeframe === '24H' ? 60 * 60 * 1000 : timeframe === '7D' ? 60 * 60 * 1000 : 60 * 60 * 1000;
+    
+    let currentPrice = basePrice;
+    
+    for (let i = points; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * interval);
+      
+      const volatility = token.symbol === 'USDC' ? 0.001 : 0.02;
+      const trend = (token.priceChange24h / 100) / points;
+      const randomWalk = (Math.random() - 0.5) * volatility;
+      
+      currentPrice = currentPrice * (1 + trend + randomWalk);
+      currentPrice = Math.max(0.01, currentPrice);
+      
+      data.push({
+        time: timeframe === '24H' 
+          ? time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+          : time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        price: currentPrice,
+        timestamp: time.getTime()
+      });
+    }
+    
+    return data;
+  };
 
   const formatPrice = (value: number) => {
     if (value < 1) return `$${value.toFixed(4)}`;
@@ -114,32 +127,38 @@ const TokenChart = ({ token, onBack }: TokenChartProps) => {
         </div>
 
         <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <XAxis 
-                dataKey="time" 
-                axisLine={false} 
-                tickLine={false}
-                tick={{ fontSize: 12, fill: '#888' }}
-              />
-              <YAxis 
-                domain={['dataMin - 5', 'dataMax + 5']}
-                axisLine={false} 
-                tickLine={false}
-                tick={{ fontSize: 12, fill: '#888' }}
-                tickFormatter={formatPrice}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Line 
-                type="monotone" 
-                dataKey="price" 
-                stroke={token.priceChange24h >= 0 ? '#10b981' : '#ef4444'}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: token.priceChange24h >= 0 ? '#10b981' : '#ef4444' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full loading-spinner"></div>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <XAxis 
+                  dataKey="time" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#888' }}
+                />
+                <YAxis 
+                  domain={['dataMin - 5', 'dataMax + 5']}
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#888' }}
+                  tickFormatter={formatPrice}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="price" 
+                  stroke={token.priceChange24h >= 0 ? '#10b981' : '#ef4444'}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: token.priceChange24h >= 0 ? '#10b981' : '#ef4444' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 

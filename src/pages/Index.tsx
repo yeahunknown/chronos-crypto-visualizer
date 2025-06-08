@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import ChronosLogo from '../components/ChronosLogo';
@@ -9,6 +8,7 @@ import SendReceiveModal from '../components/SendReceiveModal';
 import TokenChart from '../components/TokenChart';
 import { Toaster } from '../components/ui/toaster';
 import { Token, Transaction, WalletState } from '../types/wallet';
+import { fetchTokenPrices } from '../services/cryptoService';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -30,6 +30,27 @@ const Index = () => {
   });
   const [password, setPassword] = useState('');
 
+  // Fetch real price data on component mount
+  useEffect(() => {
+    const loadPrices = async () => {
+      console.log('Fetching real token prices...');
+      const prices = await fetchTokenPrices();
+      if (prices) {
+        setWalletState(prev => ({
+          ...prev,
+          tokens: prev.tokens.map(token => ({
+            ...token,
+            price: prices[token.symbol as keyof typeof prices]?.price || token.price,
+            priceChange24h: prices[token.symbol as keyof typeof prices]?.priceChange24h || token.priceChange24h
+          }))
+        }));
+        console.log('Updated with real prices:', prices);
+      }
+    };
+
+    loadPrices();
+  }, []);
+
   // Calculate total net worth
   useEffect(() => {
     const netWorth = walletState.tokens.reduce((total, token) => {
@@ -38,26 +59,22 @@ const Index = () => {
     setWalletState(prev => ({ ...prev, totalNetWorth: netWorth }));
   }, [walletState.tokens]);
 
-  // Simulate price updates every 10 seconds
+  // Update prices every 30 seconds with real data
   useEffect(() => {
-    const interval = setInterval(() => {
-      setWalletState(prev => ({
-        ...prev,
-        tokens: prev.tokens.map(token => {
-          if (token.symbol === 'USDC') return token;
-          
-          const randomChange = (Math.random() - 0.5) * 0.02; // ±1% random change
-          const newPriceChange = token.priceChange24h + randomChange;
-          const newPrice = token.price * (1 + randomChange * 0.1);
-          
-          return {
+    const interval = setInterval(async () => {
+      console.log('Updating prices...');
+      const prices = await fetchTokenPrices();
+      if (prices) {
+        setWalletState(prev => ({
+          ...prev,
+          tokens: prev.tokens.map(token => ({
             ...token,
-            price: Math.max(0.01, newPrice),
-            priceChange24h: Math.max(-10, Math.min(10, newPriceChange))
-          };
-        })
-      }));
-    }, 10000);
+            price: prices[token.symbol as keyof typeof prices]?.price || token.price,
+            priceChange24h: prices[token.symbol as keyof typeof prices]?.priceChange24h || token.priceChange24h
+          }))
+        }));
+      }
+    }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
   }, []);
@@ -201,14 +218,14 @@ const Index = () => {
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button
                   onClick={() => setShowModal('send')}
-                  className="bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button shadow-lg drop-shadow-md"
+                  className="bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button shadow-lg drop-shadow-md"
                 >
                   <ArrowUp size={20} />
                   <span>Send</span>
                 </button>
                 <button
                   onClick={() => setShowModal('receive')}
-                  className="bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button shadow-lg drop-shadow-md"
+                  className="bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 wallet-button shadow-lg drop-shadow-md"
                 >
                   <ArrowDown size={20} />
                   <span>Receive</span>
