@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import ChronosLogo from '../components/ChronosLogo';
@@ -6,6 +7,7 @@ import TokenCard from '../components/TokenCard';
 import TransactionList from '../components/TransactionList';
 import SendReceiveModal from '../components/SendReceiveModal';
 import TokenChart from '../components/TokenChart';
+import { Toaster } from '../components/ui/toaster';
 import { Token, Transaction, WalletState } from '../types/wallet';
 
 const Index = () => {
@@ -345,6 +347,8 @@ const Index = () => {
         }}
         tokens={walletState.tokens}
       />
+      
+      <Toaster />
     </div>
   );
 };
