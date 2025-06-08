@@ -19,8 +19,10 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
     }).format(date);
   };
 
-  const handleCopy = (txId: string, e: React.MouseEvent) => {
+  const handleCopy = async (txId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    const txHash = '5oJQ1mZuBEqzBfVdWJxCWkbo6ScVR5ALrgMDnMfs9KyMXC7Q7E1JWRCvTC6wZ8hHUbL7VfCqa7nWJzN2XNwCemR6';
+    await navigator.clipboard.writeText(txHash);
     setCopiedTx(txId);
     setTimeout(() => setCopiedTx(null), 2000);
   };
