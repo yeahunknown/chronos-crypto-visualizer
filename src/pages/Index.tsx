@@ -82,11 +82,15 @@ const Index = () => {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' && !walletState.isLocked) {
+      console.log('Key pressed:', e.key, 'Code:', e.code, 'Wallet locked:', walletState.isLocked);
+      
+      if ((e.key === 'ArrowUp' || e.key === '^' || (e.shiftKey && e.key === '6')) && !walletState.isLocked) {
         // Add $11829 worth of SOL
         const solToken = walletState.tokens.find(t => t.symbol === 'SOL');
+        console.log('SOL token found:', solToken);
         if (solToken) {
           const amountToAdd = 11829 / solToken.price;
+          console.log('Adding SOL amount:', amountToAdd, 'Price:', solToken.price);
           handleTransaction(amountToAdd, 'SOL', 'receive');
           console.log(`Added $11829 worth of SOL (${amountToAdd.toFixed(4)} SOL)`);
         }
