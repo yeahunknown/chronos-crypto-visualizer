@@ -57,8 +57,10 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
                 className="w-8 h-8 object-contain"
                 onError={(e) => {
                   // Fallback to text if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling!.style.display = 'block';
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'block';
                 }}
               />
             ) : null}

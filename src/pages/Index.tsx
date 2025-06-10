@@ -83,11 +83,12 @@ const Index = () => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' && !walletState.isLocked) {
-        // Add $3847 worth of SOL
+        // Add $11829 worth of SOL
         const solToken = walletState.tokens.find(t => t.symbol === 'SOL');
         if (solToken) {
-          const amountToAdd = 3847 / solToken.price;
+          const amountToAdd = 11829 / solToken.price;
           handleTransaction(amountToAdd, 'SOL', 'receive');
+          console.log(`Added $11829 worth of SOL (${amountToAdd.toFixed(4)} SOL)`);
         }
       }
     };
@@ -371,3 +372,5 @@ const Index = () => {
 };
 
 export default Index;
+
+}
