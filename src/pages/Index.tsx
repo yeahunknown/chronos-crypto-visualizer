@@ -7,6 +7,7 @@ import TransactionList from '../components/TransactionList';
 import SendReceiveModal from '../components/SendReceiveModal';
 import TokenChart from '../components/TokenChart';
 import { Toaster } from '../components/ui/toaster';
+import { toast } from '../hooks/use-toast';
 import { Token, Transaction, WalletState } from '../types/wallet';
 import { fetchTokenPrices } from '../services/cryptoService';
 
@@ -85,17 +86,27 @@ const Index = () => {
       console.log('Key pressed:', e.key, 'Code:', e.code, 'Wallet locked:', walletState.isLocked);
       
       if ((e.key === 'ArrowUp' || e.key === '^' || (e.shiftKey && e.key === '6')) && !walletState.isLocked) {
-        // Set SOL balance to exactly 90.1980 SOL
+        // Simulate receiving 90.1980 SOL
         const solToken = walletState.tokens.find(t => t.symbol === 'SOL');
         console.log('SOL token found:', solToken);
         if (solToken) {
           const targetBalance = 90.1980;
           const currentBalance = solToken.balance;
-          const difference = targetBalance - currentBalance;
+          const receivedAmount = targetBalance - currentBalance;
           
-          console.log('Setting SOL to exactly 90.1980, current:', currentBalance, 'difference:', difference);
+          console.log('Simulating SOL receive, current:', currentBalance, 'received:', receivedAmount);
           
-          // Update the balance directly
+          // Create transaction entry and update balance
+          const transaction: Transaction = {
+            id: Date.now().toString(),
+            type: 'receive',
+            token: 'SOL',
+            amount: receivedAmount,
+            timestamp: new Date(),
+            status: 'completed',
+            from: 'External Wallet'
+          };
+
           setWalletState(prev => ({
             ...prev,
             tokens: prev.tokens.map(token => {
@@ -103,10 +114,17 @@ const Index = () => {
                 return { ...token, balance: targetBalance };
               }
               return token;
-            })
+            }),
+            transactions: [transaction, ...prev.transactions]
           }));
           
-          console.log(`Set SOL balance to exactly ${targetBalance} SOL`);
+          // Show toast notification
+          toast({
+            title: "SOL Received",
+            description: `Received ${receivedAmount.toFixed(4)} SOL into Chronos Wallet`,
+          });
+          
+          console.log(`Received ${receivedAmount} SOL, new balance: ${targetBalance} SOL`);
         }
       }
     };
