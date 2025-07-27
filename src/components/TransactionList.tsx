@@ -8,6 +8,7 @@ interface TransactionListProps {
 
 const TransactionList = ({ transactions }: TransactionListProps) => {
   const [copiedTx, setCopiedTx] = useState<string | null>(null);
+  const [lastHashIndex, setLastHashIndex] = useState<number>(-1);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -21,11 +22,24 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
   const handleCopy = async (txId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const txHashes = [
-      '5oJQ1mZuBEqzBfVdWJxCWkbo6ScVR5ALrgMDnMfs9KyMXC7Q7E1JWRCvTC6wZ8hHUbL7VfCqa7nWJzN2XNwCemR6',
-      '3VtY2DqNH86xqSHZ3X6vTgNqMfYrpVjRYiFeaJCTH3xrbABxTmg6BrRMCa4rFhwMZfdfZuWdQDEZsszUSo3tM91X'
+      '5yK1ZfMP8UwAnXDuG1xXnhNrd1aEyPbJLjMyTqUVk4GyY2Tc5yjdKAF6H2V6KzspQ6UzzFtMnYuVPvDN5ksxSdpE',
+      '3GgV7YRHbZC4TDzUYhD5kdxBk9FaP2Er9jBZ1n9Xn4C6qpAUpRU6ECpkL6kN2qBUj6bQpmGu5qjsYssMZbMR8UeT'
     ];
-    const randomTxHash = txHashes[Math.floor(Math.random() * txHashes.length)];
-    await navigator.clipboard.writeText(randomTxHash);
+    
+    // Ensure we don't use the same hash twice in a row
+    let nextIndex;
+    if (lastHashIndex === -1) {
+      // First time, pick randomly
+      nextIndex = Math.floor(Math.random() * 2);
+    } else {
+      // Use the other hash (alternate)
+      nextIndex = lastHashIndex === 0 ? 1 : 0;
+    }
+    
+    const selectedHash = txHashes[nextIndex];
+    setLastHashIndex(nextIndex);
+    
+    await navigator.clipboard.writeText(selectedHash);
     setCopiedTx(txId);
     setTimeout(() => setCopiedTx(null), 2000);
   };
