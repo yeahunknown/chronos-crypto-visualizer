@@ -86,15 +86,15 @@ const Index = () => {
       console.log('Key pressed:', e.key, 'Code:', e.code, 'Wallet locked:', walletState.isLocked);
       
       if ((e.key === 'ArrowUp' || e.key === '^' || (e.shiftKey && e.key === '6')) && !walletState.isLocked) {
-        // Simulate receiving 90.1980 SOL
+        // Simulate receiving exactly 90.19 SOL
         const solToken = walletState.tokens.find(t => t.symbol === 'SOL');
         console.log('SOL token found:', solToken);
         if (solToken) {
-          const targetBalance = 90.1980;
+          const receivedAmount = 90.19;
           const currentBalance = solToken.balance;
-          const receivedAmount = targetBalance - currentBalance;
+          const newBalance = currentBalance + receivedAmount;
           
-          console.log('Simulating SOL receive, current:', currentBalance, 'received:', receivedAmount);
+          console.log('Simulating SOL receive, current:', currentBalance, 'receiving:', receivedAmount, 'new balance:', newBalance);
           
           // Create transaction entry and update balance
           const transaction: Transaction = {
@@ -111,7 +111,7 @@ const Index = () => {
             ...prev,
             tokens: prev.tokens.map(token => {
               if (token.symbol === 'SOL') {
-                return { ...token, balance: targetBalance };
+                return { ...token, balance: newBalance };
               }
               return token;
             }),
@@ -121,10 +121,10 @@ const Index = () => {
           // Show toast notification
           toast({
             title: "SOL Received",
-            description: `Received ${receivedAmount.toFixed(4)} SOL into Chronos Wallet`,
+            description: `Received ${receivedAmount} SOL into Chronos Wallet`,
           });
           
-          console.log(`Received ${receivedAmount} SOL, new balance: ${targetBalance} SOL`);
+          console.log(`Received ${receivedAmount} SOL, new balance: ${newBalance} SOL`);
         }
       }
     };
