@@ -21,7 +21,7 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
   const getTokenIcon = (symbol: string) => {
     const icons: { [key: string]: string } = {
       SOL: 'https://i.ibb.co/YBBwCFX7/SOL.png',
-      ETH: 'https://i.ibb.co/LzcxbvMn/ETH.png',
+      ETH: 'https://i.ibb.co/1GcrjzWf/ETH.webp',
       BTC: 'https://i.ibb.co/Z1my5RZR/BTC.png',
       MATIC: 'https://i.ibb.co/cK0GVkYN/MATIC.png',
       USDC: 'https://i.ibb.co/CkDrGYL/USDC.png'
