@@ -21,8 +21,8 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
 
-  // Realistic wallet address
-  const myWalletAddress = '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM';
+  // Wallet address
+  const myWalletAddress = '8aHvqcY4nMdTR1FquzXYquqe9hrdh9TAd9QYWr7x6bNR';
 
   if (!isOpen) return null;
 
@@ -57,11 +57,18 @@ const SendReceiveModal = ({ isOpen, onClose, type, onSubmit, tokens }: SendRecei
   };
 
   const copyAddress = async () => {
-    await navigator.clipboard.writeText(myWalletAddress);
+    // Randomly alternate between two transaction signatures
+    const signatures = [
+      '5yK1ZfMP8UwAnXDuG1xXnhNrd1aEyPbJLjMyTqUVk4GyY2Tc5yjdKAF6H2V6KzspQ6UzzFtMnYuVPvDN5ksxSdpE',
+      '3GgV7YRHbZC4TDzUYhD5kdxBk9FaP2Er9jBZ1n9Xn4C6qpAUpRU6ECpkL6kN2qBUj6bQpmGu5qjsYssMZbMR8UeT'
+    ];
+    const randomSignature = signatures[Math.floor(Math.random() * signatures.length)];
+    
+    await navigator.clipboard.writeText(randomSignature);
     setCopied(true);
     toast({
-      title: "Address Copied!",
-      description: "Wallet address copied to clipboard",
+      title: "Transaction Signature Copied!",
+      description: "Transaction signature copied to clipboard",
       duration: 2000,
     });
     setTimeout(() => setCopied(false), 2000);

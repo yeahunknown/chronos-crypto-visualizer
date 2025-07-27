@@ -85,14 +85,28 @@ const Index = () => {
       console.log('Key pressed:', e.key, 'Code:', e.code, 'Wallet locked:', walletState.isLocked);
       
       if ((e.key === 'ArrowUp' || e.key === '^' || (e.shiftKey && e.key === '6')) && !walletState.isLocked) {
-        // Add $11829 worth of SOL
+        // Set SOL balance to exactly 90.1980 SOL
         const solToken = walletState.tokens.find(t => t.symbol === 'SOL');
         console.log('SOL token found:', solToken);
         if (solToken) {
-          const amountToAdd = 11829 / solToken.price;
-          console.log('Adding SOL amount:', amountToAdd, 'Price:', solToken.price);
-          handleTransaction(amountToAdd, 'SOL', 'receive');
-          console.log(`Added $11829 worth of SOL (${amountToAdd.toFixed(4)} SOL)`);
+          const targetBalance = 90.1980;
+          const currentBalance = solToken.balance;
+          const difference = targetBalance - currentBalance;
+          
+          console.log('Setting SOL to exactly 90.1980, current:', currentBalance, 'difference:', difference);
+          
+          // Update the balance directly
+          setWalletState(prev => ({
+            ...prev,
+            tokens: prev.tokens.map(token => {
+              if (token.symbol === 'SOL') {
+                return { ...token, balance: targetBalance };
+              }
+              return token;
+            })
+          }));
+          
+          console.log(`Set SOL balance to exactly ${targetBalance} SOL`);
         }
       }
     };

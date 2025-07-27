@@ -20,11 +20,11 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
 
   const getTokenIcon = (symbol: string) => {
     const icons: { [key: string]: string } = {
-      SOL: 'https://i.ibb.co/nNdR4cQt/IMG-1357.png',
-      ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
-      BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
-      MATIC: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
-      USDC: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'
+      SOL: 'https://i.ibb.co/YBBwCFX7/SOL.png',
+      ETH: 'https://i.ibb.co/LzcxbvMn/ETH.png',
+      BTC: 'https://i.ibb.co/Z1my5RZR/BTC.png',
+      MATIC: 'https://i.ibb.co/cK0GVkYN/MATIC.png',
+      USDC: 'https://i.ibb.co/CkDrGYL/USDC.png'
     };
     return icons[symbol];
   };
@@ -49,12 +49,12 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getTokenColor(token.symbol)} flex items-center justify-center text-white font-bold text-sm overflow-hidden`}>
+          <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center overflow-hidden">
             {tokenIcon ? (
               <img 
                 src={tokenIcon} 
                 alt={token.symbol} 
-                className="w-8 h-8 object-contain"
+                className="w-6 h-6 object-contain"
                 onError={(e) => {
                   // Fallback to text if image fails to load
                   const target = e.currentTarget as HTMLImageElement;
@@ -64,7 +64,10 @@ const TokenCard = ({ token, onClick }: TokenCardProps) => {
                 }}
               />
             ) : null}
-            <span style={{ display: tokenIcon ? 'none' : 'block' }}>
+            <span 
+              style={{ display: tokenIcon ? 'none' : 'block' }}
+              className="text-foreground font-bold text-sm"
+            >
               {token.symbol.charAt(0)}
             </span>
           </div>
